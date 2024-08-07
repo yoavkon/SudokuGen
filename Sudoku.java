@@ -1,26 +1,40 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.io.*;
-
 public class Sudoku
 {
+    static final int MAX_DIGIT = 9;
     public static void main(String[] args)
     {
-        int[][] sudokuGrid = 
+        int[][] sudoku_grid = 
         {
-            {5, 3, 4, 6, 7, 8, 9, 1, 2},
-            {6, 7, 2, 1, 9, 5, 3, 4, 8},
-            {1, 9, 8, 3, 4, 2, 5, 6, 7},
-            {8, 5, 9, 7, 6, 1, 4, 2, 3},
-            {4, 2, 6, 8, 5, 3, 7, 9, 1},
-            {7, 1, 3, 9, 2, 4, 8, 5, 6},
-            {9, 6, 1, 5, 3, 7, 2, 8, 4},
-            {2, 8, 7, 4, 1, 9, 6, 3, 5},
-            {3, 4, 5, 2, 8, 6, 1, 7, 9}
+            {5, 3, 0, 0, 7, 0, 0, 0, 0},
+            {6, 0, 0, 1, 9, 5, 0, 0, 0},
+            {0, 9, 8, 0, 0, 0, 0, 6, 0},
+            {8, 0, 0, 0, 6, 0, 4, 2, 3},
+            {4, 0, 0, 8, 0, 3, 7, 9, 1},
+            {7, 0, 0, 0, 2, 0, 0, 0, 6},
+            {0, 6, 0, 0, 0, 0, 2, 8, 0},
+            {0, 0, 0, 4, 1, 9, 0, 0, 5},
+            {0, 0, 0, 0, 8, 0, 0, 7, 9}
         };
-        PrintGrid(sudokuGrid);
-        System.out.println("Grid is valid: " + IsGridValid(sudokuGrid));
+//        int[][] sudoku_grid = 
+//        {
+//            {5, 3, 4, 6, 7, 8, 9, 1, 2},
+//            {6, 7, 2, 1, 9, 5, 3, 4, 8},
+//            {1, 9, 8, 3, 4, 2, 5, 6, 7},
+//            {8, 5, 9, 7, 6, 1, 4, 2, 3},
+//            {4, 2, 6, 8, 5, 3, 7, 9, 1},
+//            {7, 1, 3, 9, 2, 4, 8, 5, 6},
+//            {9, 6, 1, 5, 3, 7, 2, 8, 4},
+//            {2, 8, 7, 4, 1, 9, 6, 3, 5},
+//            {3, 4, 5, 2, 8, 6, 1, 7, 9}
+//        };
+        PrintGrid(sudoku_grid);
+        System.out.println("Solving..");
+        if (SolveGrid(sudoku_grid, 0, 0))
+            System.out.println("Success!");
+        else 
+            System.out.println(":(");
+        PrintGrid(sudoku_grid);
+        System.out.println("Grid is valid: " + IsGridValid(sudoku_grid));
     }
 
     // Temporary function
@@ -30,15 +44,60 @@ public class Sudoku
         {
             for (int col = 0; col < grid.length; col++)
             {
-                if (!IsCellValid(row, col, grid, grid[row][col]))
+                if (!IsCellValid(row, col, grid))
                     return false;
             }
         }
         return true;
     }
 
-    public static boolean IsCellValid(int row, int col, int[][] grid, int n)
+    // This method solves the entire Sudoku grid
+    // and returns true if it was successful (solvable)
+    public static boolean SolveGrid(int[][] grid, int row, int col)
     {
+        // base case: reached last cell
+        if (row == grid[0].length - 1 && col == grid.length - 1)
+            return true;
+
+        // go to next row every column
+        if (col == grid.length)
+        {
+            // initalize column
+            col = 0;
+            row++;
+        }
+
+        if (grid[row][col] != 0)
+            return SolveGrid(grid, row, col+1);
+
+        // check every number (backtracking)
+        for (int i = 1; i <= MAX_DIGIT; i++)
+        {
+            // copy current grid for backtracking
+            int[][] copy = new int[grid.length][grid[0].length];
+            for (int j = 0; j < grid.length; j++)
+                copy[j] = grid[j].clone();
+
+            grid[row][col] = i;
+            if (IsCellValid(row, col, grid))
+            {
+                // Try to solve
+                if (SolveGrid(grid, row, col+1))
+                    return true;
+            }
+            
+            // backtrack (go back to previous copy)
+            for (int j = 0; j < grid.length; j++)
+                grid[j] = copy[j].clone();
+        }
+
+        return false;
+    }
+
+    public static boolean IsCellValid(int row, int col, int[][] grid)
+    {
+        int n = grid[row][col];
+
         // Special case, 0 represents empty value
         if (n == 0) return true;
 
