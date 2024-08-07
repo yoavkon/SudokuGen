@@ -5,16 +5,28 @@ public class Sudoku
     {
         int[][] sudoku_grid = 
         {
-            {5, 3, 0, 0, 7, 0, 0, 0, 0},
-            {6, 0, 0, 1, 9, 5, 0, 0, 0},
-            {0, 9, 8, 0, 0, 0, 0, 6, 0},
-            {8, 0, 0, 0, 6, 0, 4, 2, 3},
-            {4, 0, 0, 8, 0, 3, 7, 9, 1},
-            {7, 0, 0, 0, 2, 0, 0, 0, 6},
-            {0, 6, 0, 0, 0, 0, 2, 8, 0},
-            {0, 0, 0, 4, 1, 9, 0, 0, 5},
-            {0, 0, 0, 0, 8, 0, 0, 7, 9}
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 6, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0}
         };
+//        int[][] sudoku_grid = 
+//        {
+//            {5, 3, 0, 0, 7, 0, 0, 0, 0},
+//            {6, 0, 0, 1, 9, 5, 0, 0, 0},
+//            {0, 9, 8, 0, 0, 0, 0, 6, 0},
+//            {8, 0, 0, 0, 6, 0, 4, 2, 3},
+//            {4, 0, 0, 8, 0, 3, 7, 9, 1},
+//            {7, 0, 0, 0, 2, 0, 0, 0, 6},
+//            {0, 6, 0, 0, 0, 0, 2, 8, 0},
+//            {0, 0, 0, 4, 1, 9, 0, 0, 5},
+//            {0, 0, 0, 0, 8, 0, 0, 7, 9}
+//        };
 //        int[][] sudoku_grid = 
 //        {
 //            {5, 3, 4, 6, 7, 8, 9, 1, 2},
@@ -73,11 +85,6 @@ public class Sudoku
         // check every number (backtracking)
         for (int i = 1; i <= MAX_DIGIT; i++)
         {
-            // copy current grid for backtracking
-            int[][] copy = new int[grid.length][grid[0].length];
-            for (int j = 0; j < grid.length; j++)
-                copy[j] = grid[j].clone();
-
             grid[row][col] = i;
             if (IsCellValid(row, col, grid))
             {
@@ -87,8 +94,7 @@ public class Sudoku
             }
             
             // backtrack (go back to previous copy)
-            for (int j = 0; j < grid.length; j++)
-                grid[j] = copy[j].clone();
+            grid[row][col] = 0;
         }
 
         return false;
