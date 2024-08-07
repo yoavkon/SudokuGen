@@ -41,7 +41,7 @@ public class Sudoku
 //        };
         PrintGrid(sudoku_grid);
         System.out.println("Solving..");
-        if (SolveGrid(sudoku_grid, 0, 0))
+        if (SolveGrid(sudoku_grid, 0, 0, true))
             System.out.println("Success!");
         else 
             System.out.println(":(");
@@ -65,36 +65,63 @@ public class Sudoku
 
     // This method solves the entire Sudoku grid
     // and returns true if it was successful (solvable)
-    public static boolean SolveGrid(int[][] grid, int row, int col)
+    public static boolean SolveGrid(int[][] grid, int row, int col, boolean asc)
     {
         // base case: reached last cell
-        if (row == grid[0].length - 1 && col == grid.length - 1)
+        if (row == grid[0].length - 1 && col == grid.length)
+        {
             return true;
+        }
 
         // go to next row every column
         if (col == grid.length)
         {
-            // initalize column
+            // initialize column
             col = 0;
             row++;
         }
 
         if (grid[row][col] != 0)
-            return SolveGrid(grid, row, col+1);
+            return SolveGrid(grid, row, col+1, asc);
 
         // check every number (backtracking)
-        for (int i = 1; i <= MAX_DIGIT; i++)
+        // either in ascending order or descending
+        // (later used to determine if the grid is uniquely solvable)
+        int i = 0;
+        boolean cond = false;
+        if (asc)
+        {
+            i = 1;
+            cond = (i <= MAX_DIGIT);
+        }
+        else
+        {
+            i = MAX_DIGIT;
+            cond = (i >= 1);
+        }
+        while (cond)
         {
             grid[row][col] = i;
             if (IsCellValid(row, col, grid))
             {
                 // Try to solve
-                if (SolveGrid(grid, row, col+1))
+                if (SolveGrid(grid, row, col+1, asc))
                     return true;
             }
             
             // backtrack (go back to previous copy)
             grid[row][col] = 0;
+            
+            if (asc) {
+                i++;
+                cond = (i <= MAX_DIGIT);
+            }
+            else {
+                i--;
+                cond = (i >= 1);
+                System.out.println(i);
+                System.out.println(cond);
+            }
         }
 
         return false;
