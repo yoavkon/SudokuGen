@@ -1,37 +1,86 @@
-import java.util.Arrays;
+import java.util.Random;
+import java.util.ArrayList;
 
 public class Sudoku
 {
     static final int MAX_DIGIT = 9;
+    static final int SIZE = 9; // the grid is 9x9
     public static void main(String[] args)
     {
-        int[][] sudoku_grid = 
+        if (args.length == 0)
         {
-            {5, 3, 0, 0, 7, 0, 0, 0, 0},
-            {6, 0, 0, 1, 9, 5, 0, 0, 0},
-            {0, 9, 8, 0, 0, 0, 0, 6, 0},
-            {8, 0, 0, 0, 6, 0, 4, 2, 3},
-            {4, 0, 0, 8, 0, 3, 7, 9, 1},
-            {7, 0, 0, 0, 2, 0, 0, 0, 6},
-            {0, 6, 0, 0, 0, 0, 2, 8, 0},
-            {0, 0, 0, 4, 1, 9, 0, 0, 5},
-            {0, 0, 0, 0, 8, 0, 0, 7, 9}
-        };
-        
-        PrintGrid(sudoku_grid);
-        System.out.println("Solving..");
-        if (!IsGridValid(sudoku_grid)) System.out.println("Unsolvable");
-        if (IsUniquelySolvable(sudoku_grid))
+            System.err.println("not enough arguments");
+            System.out.println("Usage: [solve / generate]");
+        }
+        else if (args[0].equals("generate"))
         {
-            System.out.println("Success!");
+            int[][] sudoku_grid = new int[SIZE][SIZE];
+            GenerateGrid(sudoku_grid);
             PrintGrid(sudoku_grid);
         }
-        else if (SolveGrid(sudoku_grid, 0, 0, true))
+        else if (args[0].equals("solve"))
         {
-           System.out.println("More than one possible solution :(");
-           System.out.println("ascending order:");
-           PrintGrid(sudoku_grid);
+            int[][] sudoku_grid = 
+            {
+                {2, 0, 0, 0, 0, 3, 0, 0, 1},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 3, 0, 0, 2, 0, 8, 6, 4},
+                {3, 0, 0, 4, 0, 0, 1, 0, 0},
+                {0, 0, 5, 0, 9, 0, 7, 0, 0},
+                {0, 4, 0, 7, 0, 0, 0, 0, 5},
+                {5, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 6, 2, 0, 0, 7, 0, 0, 0},
+                {7, 0, 0, 1, 0, 9, 0, 0, 0}
+            };
+            
+            PrintGrid(sudoku_grid);
+            System.out.println("Solving..");
+            if (!IsGridValid(sudoku_grid)) System.out.println("Unsolvable");
+            if (IsUniquelySolvable(sudoku_grid))
+            {
+                System.out.println("Success!");
+                PrintGrid(sudoku_grid);
+            }
+            else if (SolveGrid(sudoku_grid, 0, 0, true))
+            {
+               System.out.println("More than one possible solution :(");
+               System.out.println("ascending order:");
+               PrintGrid(sudoku_grid);
+            }
         }
+        else System.out.println("Usage: [solve][generate]");
+    }
+
+    public static boolean GenerateGrid(int[][] grid)
+    {
+        for (int row = 0; row < SIZE; row++)
+        {
+            for (int col = 0; col < SIZE; col++)
+            {
+                if (grid[row][col] == 0)
+                {
+                    Random rand = new Random();
+
+                    // array of random numbers from 1-9
+                    int[] random_nums = rand.ints(1, 10).distinct().limit(SIZE).toArray();
+
+                    for (int num : random_nums)
+                    {
+                        grid[row][col] = num;
+                        if (IsCellValid(row, col, grid))
+                        {
+                            // backtrack
+                            if (GenerateGrid(grid))
+                                return true;
+                        }
+                        grid[row][col] = 0;
+                    }
+
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // This method solves the entire Sudoku grid
@@ -47,7 +96,7 @@ public class Sudoku
         // go to next row every column
         if (col == grid.length)
         {
-            // initialize column
+            // initialize column and increment row
             col = 0;
             row++;
         }
@@ -80,7 +129,7 @@ public class Sudoku
                     return true;
             }
             
-            // backtrack (go back to previous copy)
+            // backtrack
             grid[row][col] = 0;
             
             if (asc) {
@@ -109,8 +158,8 @@ public class Sudoku
             solution2[i] = grid[i].clone();
         }
         
-        // Solve the Sudoku grid once in ascending
-        // order and once in descending order
+        // Solve the Sudoku grid once in ascending order
+        // and once in descending order and compare the two
         if (SolveGrid(solution1, 0, 0, true) && SolveGrid(solution2, 0, 0, false))
         {
             if (java.util.Arrays.deepEquals(solution1, solution2))
@@ -159,6 +208,7 @@ public class Sudoku
         return true;
     }
 
+    // Temporary function, inefficient
     public static boolean IsGridValid(int[][] grid)
     {
         for (int row = 0; row < grid[0].length; row++)
@@ -194,5 +244,4 @@ public class Sudoku
                 System.out.println("------+-------+------");
         }
     }
-
 }
