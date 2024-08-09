@@ -18,7 +18,8 @@ java Sudoku generate
 ```
 
 ## Solve
-Modify the source code and change the sudoku_puzzle array if you would like to solve a different Sudoku puzzle
+Modify the source code and change the sudoku_grid array
+if you would like to solve a different Sudoku puzzle
 ```bash
 vim Sudoku.java
 javac Sudoku.java && java Sudoku solve
