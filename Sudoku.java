@@ -4,7 +4,8 @@ import java.util.ArrayList;
 public class Sudoku
 {
     static final int MAX_DIGIT = 9;
-    static final int SIZE = 9; // the grid is 9x9
+    static final int SIZE = 9;     // the grid is 9x9
+    static final int SUB_SIZE = 3; // the subgrids are 3x3
     public static void main(String[] args)
     {
         if (args.length == 0)
@@ -15,7 +16,22 @@ public class Sudoku
         else if (args[0].equals("generate"))
         {
             int[][] sudoku_grid = new int[SIZE][SIZE];
+
+            // generate the full grid
+            System.out.println("generating..");
             GenerateGrid(sudoku_grid);
+            PrintGrid(sudoku_grid);
+            System.out.println();
+
+            // remove a number of cells
+            // (the more you remove, the more difficult it gets)
+            System.out.println("removing 22 cells..");
+            RemoveCells(22, sudoku_grid);
+            PrintGrid(sudoku_grid);
+            System.out.println();
+
+            System.out.println("solving again just for fun..");
+            SolveGrid(sudoku_grid, 0, 0, true);
             PrintGrid(sudoku_grid);
         }
         else if (args[0].equals("solve"))
@@ -38,6 +54,7 @@ public class Sudoku
             if (!IsGridValid(sudoku_grid)) System.out.println("Unsolvable");
             if (IsUniquelySolvable(sudoku_grid))
             {
+                SolveGrid(sudoku_grid, 0, 0, true);
                 System.out.println("Success!");
                 PrintGrid(sudoku_grid);
             }
@@ -48,7 +65,37 @@ public class Sudoku
                PrintGrid(sudoku_grid);
             }
         }
-        else System.out.println("Usage: [solve][generate]");
+        else System.out.println("Usage: [solve / generate]");
+    }
+
+    public static void RemoveCells(int num_remove, int[][] grid)
+    {
+        // base case: no more cells to remove
+        if (num_remove == 0) return;
+
+        Random rnd = new Random();
+        int row, col;
+
+        do
+        {
+            row = rnd.nextInt(SIZE);
+            col = rnd.nextInt(SIZE);
+        }
+        while (grid[row][col] == 0);
+
+        // remove cell
+        int temp = grid[row][col];
+        grid[row][col] = 0;
+
+        if (IsUniquelySolvable(grid))
+        {
+            RemoveCells(num_remove - 1, grid);
+            return;
+        }
+
+        // backtrack;
+        grid[row][col] = temp;
+        RemoveCells(num_remove, grid);
     }
 
     public static boolean GenerateGrid(int[][] grid)
@@ -62,7 +109,7 @@ public class Sudoku
                     Random rand = new Random();
 
                     // array of random numbers from 1-9
-                    int[] random_nums = rand.ints(1, 10).distinct().limit(SIZE).toArray();
+                    int[] random_nums = rand.ints(1, MAX_DIGIT+1).distinct().limit(SIZE).toArray();
 
                     for (int num : random_nums)
                     {
@@ -88,13 +135,13 @@ public class Sudoku
     public static boolean SolveGrid(int[][] grid, int row, int col, boolean asc)
     {
         // base case: reached last cell
-        if (row == grid[0].length - 1 && col == grid.length)
+        if (row == SIZE - 1 && col == SIZE)
         {
             return true;
         }
 
         // go to next row every column
-        if (col == grid.length)
+        if (col == SIZE)
         {
             // initialize column and increment row
             col = 0;
@@ -150,9 +197,9 @@ public class Sudoku
     public static boolean IsUniquelySolvable(int[][] grid)
     {
         // Copy the grid
-        int[][] solution1 = new int[grid.length][grid[0].length]; // ascending
-        int[][] solution2 = new int[grid.length][grid[0].length]; // descending
-        for (int i = 0; i < grid.length; i++)
+        int[][] solution1 = new int[SIZE][SIZE]; // ascending
+        int[][] solution2 = new int[SIZE][SIZE]; // descending
+        for (int i = 0; i < SIZE; i++)
         {
             solution1[i] = grid[i].clone();
             solution2[i] = grid[i].clone();
@@ -163,12 +210,7 @@ public class Sudoku
         if (SolveGrid(solution1, 0, 0, true) && SolveGrid(solution2, 0, 0, false))
         {
             if (java.util.Arrays.deepEquals(solution1, solution2))
-            {
-                // copy to original grid
-                for (int i = 0; i < grid.length; i++)
-                    grid[i] = solution1[i].clone();
                 return true;
-            }
         }
 
         return false;
@@ -182,21 +224,21 @@ public class Sudoku
         if (n == 0) return true;
 
         // Check all columns
-        for (int i = 0; i < grid[0].length; i++)
+        for (int i = 0; i < SIZE; i++)
             if (grid[row][i] == n && i != col)
                 return false;
         
         // Check all rows
-        for (int i = 0; i < grid.length; i++)
+        for (int i = 0; i < SIZE; i++)
             if (grid[i][col] == n && i != row)
                 return false;
 
         // Check all 3x3 subgrids
-        int boxRow = row - row%3;
-        int boxCol = col - col%3;
-        for (int i = 0; i < 3; i++)
+        int boxRow = row - (row % SUB_SIZE);
+        int boxCol = col - (col % SUB_SIZE);
+        for (int i = 0; i < SUB_SIZE; i++)
         {
-            for (int j = 0; j < 3; j++)
+            for (int j = 0; j < SUB_SIZE; j++)
             {
                 if (grid[i+boxRow][j+boxCol] == n && (i+boxRow) != row && (j+boxCol) != col)
                 {
@@ -211,9 +253,9 @@ public class Sudoku
     // Temporary function, inefficient
     public static boolean IsGridValid(int[][] grid)
     {
-        for (int row = 0; row < grid[0].length; row++)
+        for (int row = 0; row < SIZE; row++)
         {
-            for (int col = 0; col < grid.length; col++)
+            for (int col = 0; col < SIZE; col++)
             {
                 if (!IsCellValid(row, col, grid))
                     return false;
@@ -225,22 +267,25 @@ public class Sudoku
     // This method prints the Sudoku grid
     public static void PrintGrid(int[][] grid)
     {
-        for (int row = 0; row < grid[0].length; row++)
+        for (int row = 0; row < SIZE; row++)
         {
-            for (int col = 0; col < grid.length; col++)
+            for (int col = 0; col < SIZE; col++)
             {
                 // Print cell
-                System.out.print(grid[row][col] + " ");
+                if (grid[row][col] == 0)
+                    System.out.print("# ");
+                else
+                    System.out.print(grid[row][col] + " ");
 
                 // Add a vertical divider
-                if ((col + 1) % 3 == 0 && (col + 1) % 9 != 0)
+                if ((col + 1) % SUB_SIZE == 0 && (col + 1) % SIZE != 0)
                     System.out.print("| ");
             }
             // Add a new line every row
             System.out.println();
             
-            // Add a horitontal divider every 3 rows
-            if ((row+1) % 3 == 0 && (row+1) != 9)
+            // Add a horizontal divider every 3 rows
+            if ((row+1) % SUB_SIZE == 0 && (row+1) != SIZE)
                 System.out.println("------+-------+------");
         }
     }
