@@ -25,8 +25,8 @@ public class Sudoku
 
             // remove a number of cells
             // (the more you remove, the more difficult it gets)
-            System.out.println("removing 22 cells..");
-            RemoveCells(22, sudoku_grid);
+            System.out.println("removing 40 cells..");
+            RemoveCells(40, sudoku_grid);
             PrintGrid(sudoku_grid);
             System.out.println();
 
