@@ -69,6 +69,7 @@ public class Sudoku
         else System.out.println("Usage: [solve / generate]");
     }
 
+    // This method takes a full Sudoku grid and removes cells
     public static void RemoveCells(int num_remove, int[][] grid)
     {
         // base case: no more cells to remove
